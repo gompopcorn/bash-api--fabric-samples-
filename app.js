@@ -40,42 +40,42 @@ app.use(express.urlencoded({ extended: true }));  // parse application/x-www-for
 
 app.use(cookieParser());
 
-// set secret variable
-app.set('secret', 'thisismysecret');
-app.use(expressJWT({
-    secret: 'thisismysecret'
-}).unless({
-    path: ['/users','/users/login', '/register']
-}));
-app.use(bearerToken());
+// // set secret variable
+// app.set('secret', 'thisismysecret');
+// app.use(expressJWT({
+//     secret: 'thisismysecret'
+// }).unless({
+//     path: ['/users','/users/login', '/register']
+// }));
+// app.use(bearerToken());
 
 logger.level = 'debug';
 
 
-app.use((req, res, next) => {
-    logger.debug('New req for %s', req.originalUrl);
-    if (req.originalUrl.indexOf('/users') >= 0 || req.originalUrl.indexOf('/users/login') >= 0 || req.originalUrl.indexOf('/register') >= 0) {
-        return next();
-    }
-    var token = req.token;
-    jwt.verify(token, app.get('secret'), (err, decoded) => {
-        if (err) {
-            console.log(`Error ================:${err}`)
-            res.send({
-                success: false,
-                message: 'Failed to authenticate token. Make sure to include the ' +
-                    'token returned from /users call in the authorization header ' +
-                    ' as a Bearer token'
-            });
-            return;
-        } else {
-            req.username = decoded.username;
-            req.orgname = decoded.orgName;
-            logger.debug(util.format('Decoded from JWT token: username - %s, orgname - %s', decoded.username, decoded.orgName));
-            return next();
-        }
-    });
-});
+// app.use((req, res, next) => {
+//     logger.debug('New req for %s', req.originalUrl);
+//     if (req.originalUrl.indexOf('/users') >= 0 || req.originalUrl.indexOf('/users/login') >= 0 || req.originalUrl.indexOf('/register') >= 0) {
+//         return next();
+//     }
+//     var token = req.token;
+//     jwt.verify(token, app.get('secret'), (err, decoded) => {
+//         if (err) {
+//             console.log(`Error ================:${err}`)
+//             res.send({
+//                 success: false,
+//                 message: 'Failed to authenticate token. Make sure to include the ' +
+//                     'token returned from /users call in the authorization header ' +
+//                     ' as a Bearer token'
+//             });
+//             return;
+//         } else {
+//             req.username = decoded.username;
+//             req.orgname = decoded.orgName;
+//             logger.debug(util.format('Decoded from JWT token: username - %s, orgname - %s', decoded.username, decoded.orgName));
+//             return next();
+//         }
+//     });
+// });
 
 var server = http.createServer(app).listen(port, function () { console.log(`Server started on ${port}`) });
 logger.info('****************** SERVER STARTED ************************');
@@ -236,17 +236,18 @@ app.post('/channels/:channelName/chaincodes/:chaincodeName', async function (req
             return;
         }
 
-        let message = await invoke.invokeTransaction(channelName, chaincodeName, fcn, args, req.username, req.orgname, transient, res);
-        console.log(`message result is: `);
-        console.log(message);
-        console.log('\n\n');
+        // let message = await invoke.invokeTransaction(channelName, chaincodeName, fcn, args, req.username, req.orgname, transient, res);
+        let message = await invoke.invokeTransaction(channelName, chaincodeName, fcn, args, req.body.username, req.body.orgName, transient, res);
+        // console.log(`message result is: `);
+        // console.log(message);
+        // console.log('\n\n');
 
         const response_payload = {
             result: { message },
             error: null,
             errorData: null
         }
-        res.send(response_payload);
+        // res.send(response_payload);
 
     } catch (error) {
         const response_payload = {

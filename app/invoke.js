@@ -26,10 +26,10 @@ const invokeTransaction = async (channelName, chaincodeName, fcn, args, username
     try {
         logger.debug(util.format('\n============ invoke transaction on channel %s ============\n', channelName));
 
-        // load the network configuration
-        const ccpPath =path.resolve(__dirname, '..', 'config', 'connection-org1.json');
-        const ccpJSON = fs.readFileSync(ccpPath, 'utf8')
-        const ccp = await helper.getCCP(org_name) //JSON.parse(ccpJSON);
+        // // load the network configuration
+        // const ccpPath =path.resolve(__dirname, '..', 'config', 'connection-org1.json');
+        // const ccpJSON = fs.readFileSync(ccpPath, 'utf8')
+        // const ccp = await helper.getCCP(org_name) //JSON.parse(ccpJSON);
 
         // Create a new file system based wallet for managing identities.
         const walletPath = await helper.getWalletPath(org_name) //path.join(process.cwd(), 'wallet');
@@ -157,15 +157,31 @@ const invokeTransaction = async (channelName, chaincodeName, fcn, args, username
 
             let OrgNumber = org_name.match(/\d/g).join("");
 
-            let shellResult = shell.exec(`${bashFilesDir}/createCar.sh ${OrgNumber} ${args[0]} ${args[1]} ${args[2]} ${args[3]} ${args[4]} `);
+            let shellResult = shell.exec(`${bashFilesDir}/createCar.sh ${OrgNumber} \
+            ${args[0]} ${args[1]} ${args[2]} ${args[3]} ${args[4]}`, {silent: true, async: true}, (code, stdout, stderr) =>
+            {
+                if (code !== 0) {
+                    console.log(colors.bgRed("Error in createCar.sh"));
+                    console.log(colors.red(stderr));
+                    return res.status(500).send(`Error in adding asset with key: ${args[0]}`);
+                }
+            
+                else {
+                    console.log(colors.green(`* Successfully added the asset with key: ${args[0]}`));
+                    return res.send(`Successfully add   ed the asset with key: ${args[0]}`);
+                }
+            });
+
+
+            // let shellResult = shell.exec(`${bashFilesDir}/createCar.sh ${OrgNumber} ${args[0]} ${args[1]} ${args[2]} ${args[3]} ${args[4]} `);
     
-            if (shellResult.code !== 0) {
-                let shellError = shellResult.stderr;
-                console.log(colors.bgRed("Error in createCar.sh"));
-                console.log(colors.red(shellError));
-                return;
-            }
-            else message = `Successfully added the car asset with key ${args[0]}`;
+            // if (shellResult.code !== 0) {
+            //     let shellError = shellResult.stderr;
+            //     console.log(colors.bgRed("Error in createCar.sh"));
+            //     console.log(colors.red(shellError));
+            //     return;
+            // }
+            // else message = `Successfully added the car asset with key ${args[0]}`;
         } 
 
 
